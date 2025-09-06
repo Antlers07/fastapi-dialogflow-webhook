@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitchenBot - MySQL Integrated</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2c3e50, #4a6572);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            padding: 20px;
+            background: #344955;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header h1 i {
+            margin-right: 12px;
+            color: #f9a826;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .main-content {
+            display: flex;
+            height: 600px;
+        }
+        
+        .features-panel {
+            width: 250px;
+            background: #f5f7f9;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+        
+        .features-panel h3 {
+            margin-bottom: 20px;
+            color: #344955;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .feature-category {
+            margin-bottom: 25px;
+        }
+        
+        .feature-category h4 {
+            color: #344955;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-category h4 i {
+            margin-right: 8px;
+            color: #f9a826;
+        }
+        
+        .feature-item {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+        
+        .feature-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            padding: 15px 20px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h2 {
+            color: #344955;
+            font-size: 20px;
+        }
+        
+        .clear-chat {
+            background: #ffebee;
+            color: #d32f2f;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .clear-chat i {
+            margin-right: 5px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message.bot .content {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 18px 18px 18px 0;
+            align-self: flex-start;
+        }
+        
+        .message.user .content {
+            background: #344955;
+            color: white;
+            border-radius: 18px 18px 0 18px;
+            align-self: flex-end;
+        }
+        
+        .message .content {
+            padding: 12px 18px;
+            max-width: 80%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            line-height: 1.5;
+        }
+        
+        .message .time {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+        }
+        
+        .message.user .time {
+            align-self: flex-end;
+        }
+        
+        .chat-input-container {
+            padding: 15px 20px;
+            background: #f9fafb;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+        }
+        
+        .chat-input {
+            flex: 1;
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            font-size: 16px;
+            outline: none;
+            border-radius: 24px;
+            margin-right: 10px;
+        }
+        
+        .send-button {
+            background: #344955;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .send-button:hover {
+            background: #232f34;
+        }
+        
+        .data-panel {
+            width: 300px;
+            background: #f5f7f9;
+            padding: 20px;
+            border-left: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+        
+        .data-panel h3 {
+            margin-bottom: 20px;
+            color: #344955;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .refresh-btn {
+            background: #344955;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .data-section {
+            margin-bottom: 20px;
+        }
+        
+        .data-section h4 {
+            color: #344955;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .data-section h4 i {
+            margin-right: 8px;
+            color: #f9a826;
+        }
+        
+        .order-item, .inventory-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .order-id {
+            font-weight: 600;
+            color: #344955;
+        }
+        
+        .order-type {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .order-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fff0c2;
+            color: #f9a826;
+        }
+        
+        .status-preparing {
+            background: #bbdefb;
+            color: #1976d2;
+        }
+        
+        .status-ready {
+            background: #c8e6c9;
+            color: #388e3c;
+        }
+        
+        .order-details {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .order-details div {
+            margin-bottom: 5px;
+        }
+        
+        .order-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            background: #344955;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .inventory-name {
+            font-weight: 500;
+            color: #344955;
+        }
+        
+        .inventory-stock {
+            font-weight: 500;
+        }
+        
+        .stock-low {
+            color: #d32f2f;
+        }
+        
+        .stock-medium {
+            color: #f57c00;
+        }
+        
+        .stock-high {
+            color: #388e3c;
+        }
+        
+        .system-alert {
+            background: #ffebee;
+            color: #d32f2f;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .system-alert i {
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .features-panel, .data-panel {
+                width: 100%;
+                border-right: none;
+                border-left: none;
+                max-height: 200px;
+            }
+            
+            .data-panel {
+                border-top: 1px solid #e0e0e0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> KitchenBot - MySQL Integrated</h1>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                Connected to kitchen_chatbox Database
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="features-panel">
+                <h3>Available Features</h3>
+                
+                <div class="feature-category">
+                    <h4><i class="fas fa-concierge-bell"></i> Order Management</h4>
+                    <div class="feature-item" data-command="show all orders">View All Orders</div>
+                    <div class="feature-item" data-command="show pending orders">Pending Orders</div>
+                    <div class="feature-item" data-command="show preparing orders">Preparing Orders</div>
+                    <div class="feature-item" data-command="show ready orders">Ready Orders</div>
+                </div>
+                
+                <div class="feature-category">
+                    <h4><i class="fas fa-boxes"></i> Inventory Management</h4>
+                    <div class="feature-item" data-command="check stock levels">Check Stock Levels</div>
+                    <div class="feature-item" data-command="list low stock items">Low Stock Alerts</div>
+                    <div class="feature-item" data-command="request restock">Request Restock</div>
+                </div>
+                
+                <div class="feature-category">
+                    <h4><i class="fas fa-utensils"></i> Food Preparation</h4>
+                    <div class="feature-item" data-command="start preparation">Start Preparation</div>
+                    <div class="feature-item" data-command="mark as ready">Mark as Ready</div>
+                    <div class="feature-item" data-command="notify waitstaff">Notify Waitstaff</div>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>Kitchen Staff Chat</h2>
+                    <button class="clear-chat" id="clearChat">
+                        <i class="fas fa-trash"></i> Clear Chat
+                    </button>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot">
+                        <div class="content">
+                            <strong>KitchenBot connected to kitchen_chatbox database</strong><br><br>
+                            I can help you manage:<br>
+                            • Customer orders (dine-in/takeaway)<br>
+                            • Food preparation status<br>
+                            • Communication with waitstaff<br>
+                            • Inventory and stock alerts<br><br>
+                            Type "help" for available commands or click on any feature.
+                        </div>
+                        <span class="time">System Ready</span>
+                    </div>
+                </div>
+                
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Type your command here...">
+                    <button class="send-button" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="data-panel">
+                <h3>
+                    Database Data
+                    <button class="refresh-btn" id="refreshData">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </h3>
+                
+                <div class="data-section">
+                    <h4><i class="fas fa-list"></i> Recent Orders</h4>
+                    <div id="ordersList">
+                        <!-- Orders will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="data-section">
+                    <h4><i class="fas fa-box"></i> Inventory Status</h4>
+                    <div id="inventoryList">
+                        <!-- Inventory will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="system-alert">
+                    <i class="fas fa-database"></i>
+                    <span id="dbStatus">Connected to kitchen_chatbox database</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendButton');
+            const clearChatButton = document.getElementById('clearChat');
+            const featureItems = document.querySelectorAll('.feature-item');
+            const refreshDataButton = document.getElementById('refreshData');
+            const ordersList = document.getElementById('ordersList');
+            const inventoryList = document.getElementById('inventoryList');
+            const dbStatus = document.getElementById('dbStatus');
+            
+            // API base URL - update this to your backend endpoint
+            const API_BASE_URL = 'https://your-backend-domain.com/api';
+            
+            // Function to fetch data from your backend
+            async function fetchDataFromAPI(endpoint) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/${endpoint}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Error fetching ${endpoint}:`, error);
+                    addMessage(`Error connecting to database: ${error.message}`);
+                    return [];
+                }
+            }
+            
+            // Function to update data via your backend
+            async function updateDataInAPI(endpoint, data) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Error updating ${endpoint}:`, error);
+                    addMessage(`Error updating data: ${error.message}`);
+                    return { success: false, message: error.message };
+                }
+            }
+            
+            // Function to render orders
+            async function renderOrders() {
+                try {
+                    // Fetch orders from your backend
+                    const ordersData = await fetchDataFromAPI('orders');
+                    
+                    ordersList.innerHTML = '';
+                    
+                    if (ordersData.length === 0) {
+                        ordersList.innerHTML = '<div class="order-item">No orders found</div>';
+                        return;
+                    }
+                    
+                    ordersData.forEach(order => {
+                        const orderItem = document.createElement('div');
+                        orderItem.classList.add('order-item');
+                        
+                        let statusClass = '';
+                        if (order.OrderStatus === 'pending') statusClass = 'status-pending';
+                        if (order.OrderStatus === 'preparing') statusClass = 'status-preparing';
+                        if (order.OrderStatus === 'ready') statusClass = 'status-ready';
+                        
+                        // Get order items (this would come from a JOIN query in your backend)
+                        const orderItems = order.items || 'Items loading...';
+                        
+                        orderItem.innerHTML = `
+                            <div class="order-header">
+                                <div>
+                                    <span class="order-id">Order #${order.OrderID}</span>
+                                    <span class="order-type">${order.TableNumber ? 'Dine-in' : 'Takeaway'}</span>
+                                </div>
+                                <span class="order-status ${statusClass}">${order.OrderStatus}</span>
+                            </div>
+                            <div class="order-details">
+                                <div>${orderItems}</div>
+                                <div>Customer: #${order.CustomerID} | ${order.TableNumber ? 'Table: ' + order.TableNumber : 'Takeaway'}</div>
+                                <div>Total: $${order.TotalPrice ? order.TotalPrice.toFixed(2) : '0.00'}</div>
+                                <div>Placed at: ${new Date(order.CreatedAt).toLocaleTimeString()}</div>
+                            </div>
+                            <div class="order-actions">
+                                ${order.OrderStatus === 'pending' ? 
+                                    `<button class="action-btn" data-order="${order.OrderID}" data-action="preparing">Start Prep</button>` : ''}
+                                ${order.OrderStatus === 'preparing' ? 
+                                    `<button class="action-btn" data-order="${order.OrderID}" data-action="ready">Mark Ready</button>` : ''}
+                                ${order.OrderStatus === 'ready' ? 
+                                    `<button class="action-btn" data-order="${order.OrderID}" data-action="served">Mark Served</button>` : ''}
+                                <button class="action-btn" data-order="${order.OrderID}" data-action="notify">Notify</button>
+                            </div>
+                        `;
+                        
+                        ordersList.appendChild(orderItem);
+                    });
+                    
+                    // Add event listeners to action buttons
+                    document.querySelectorAll('.action-btn').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const orderId = this.getAttribute('data-order');
+                            const action = this.getAttribute('data-action');
+                            handleOrderAction(orderId, action);
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error rendering orders:', error);
+                    ordersList.innerHTML = '<div class="order-item">Error loading orders</div>';
+                }
+            }
+            
+            // Function to render inventory
+            async function renderInventory() {
+                try {
+                    // Fetch inventory from your backend
+                    const inventoryData = await fetchDataFromAPI('inventory');
+                    
+                    let lowStockCount = 0;
+                    inventoryList.innerHTML = '';
+                    
+                    if (inventoryData.length === 0) {
+                        inventoryList.innerHTML = '<div class="inventory-item">No inventory data found</div>';
+                        return;
+                    }
+                    
+                    inventoryData.forEach(item => {
+                        const inventoryItem = document.createElement('div');
+                        inventoryItem.classList.add('inventory-item');
+                        
+                        // Determine stock status
+                        let stockStatus = 'stock-high';
+                        if (item.current_amount < item.threshold) {
+                            stockStatus = 'stock-low';
+                            lowStockCount++;
+                        } else if (item.current_amount < item.threshold * 1.5) {
+                            stockStatus = 'stock-medium';
+                        }
+                        
+                        inventoryItem.innerHTML = `
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="inventory-name">${item.name}</span>
+                                <span class="inventory-stock ${stockStatus}">${item.current_amount} ${item.unit}</span>
+                            </div>
+                        `;
+                        
+                        inventoryList.appendChild(inventoryItem);
+                    });
+                    
+                    // Update database status
+                    if (lowStockCount > 0) {
+                        dbStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${lowStockCount} items need restocking`;
+                    } else {
+                        dbStatus.innerHTML = `<i class="fas fa-check-circle"></i> All items sufficiently stocked`;
+                    }
+                } catch (error) {
+                    console.error('Error rendering inventory:', error);
+                    inventoryList.innerHTML = '<div class="inventory-item">Error loading inventory</div>';
+                }
+            }
+            
+            // Function to add a message to the chat
+            function addMessage(content, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                if (isUser) {
+                    messageDiv.classList.add('user');
+                } else {
+                    messageDiv.classList.add('bot');
+                }
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('content');
+                contentDiv.innerHTML = content;
+                
+                const timeSpan = document.createElement('span');
+                timeSpan.classList.add('time');
+                
+                const now = new Date();
+                timeSpan.textContent = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+                
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(timeSpan);
+                
+                chatMessages.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Function to handle order actions
+            async function handleOrderAction(orderId, action) {
+                let newStatus = '';
+                let message = '';
+                
+                switch(action) {
+                    case 'preparing':
+                        newStatus = 'preparing';
+                        message = `Started preparation for Order #${orderId}`;
+                        break;
+                    case 'ready':
+                        newStatus = 'ready';
+                        message = `Order #${orderId} is now ready to serve`;
+                        break;
+                    case 'served':
+                        newStatus = 'served';
+                        message = `Order #${orderId} has been served`;
+                        break;
+                    case 'notify':
+                        message = `Notified waitstaff about Order #${orderId}`;
+                        addMessage(message);
+                        return;
+                }
+                
+                try {
+                    const result = await updateDataInAPI('orders/status', {
+                        orderId: orderId,
+                        status: newStatus
+                    });
+                    
+                    if (result.success) {
+                        addMessage(message);
+                        
+                        if (newStatus === 'ready') {
+                            // Simulate notifying waitstaff
+                            addMessage(`Notified waitstaff that Order #${orderId} is ready`);
+                        }
+                        
+                        renderOrders();
+                    } else {
+                        addMessage(`Error: ${result.message}`);
+                    }
+                } catch (error) {
+                    addMessage(`Error updating order: ${error.message}`);
+                }
+            }
+            
+            // Function to handle sending a message
+            async function sendMessage() {
+                const message = chatInput.value.trim();
+                if (message) {
+                    addMessage(message, true);
+                    chatInput.value = '';
+                    
+                    // Process the message and generate response
+                    setTimeout(async () => {
+                        let response = '';
+                        
+                        if (message.toLowerCase().includes('order') || message.toLowerCase().includes('status')) {
+                            try {
+                                const ordersData = await fetchDataFromAPI('orders');
+                                const pendingOrders = ordersData.filter(order => order.OrderStatus === 'pending');
+                                const preparingOrders = ordersData.filter(order => order.OrderStatus === 'preparing');
+                                const readyOrders = ordersData.filter(order => order.OrderStatus === 'ready');
+                                
+                                response = '<strong>Current Order Status:</strong><br><br>';
+                                response += `<b>Pending:</b> ${pendingOrders.length} orders<br>`;
+                                response += `<b>Preparing:</b> ${preparingOrders.length} orders<br>`;
+                                response += `<b>Ready to serve:</b> ${readyOrders.length} orders<br><br>`;
+                                
+                                if (pendingOrders.length > 0) {
+                                    response += '<b>Oldest pending order:</b> #' + pendingOrders[0].OrderID;
+                                }
+                            } catch (error) {
+                                response = 'Error fetching order data';
+                            }
+                        } else if (message.toLowerCase().includes('stock') || message.toLowerCase().includes('inventory')) {
+                            try {
+                                const inventoryData = await fetchDataFromAPI('inventory');
+                                const lowStockItems = inventoryData.filter(item => item.current_amount < item.threshold);
+                                response = '<strong>Current Inventory Status:</strong><br><br>';
+                                
+                                inventoryData.forEach(item => {
+                                    const status = item.current_amount < item.threshold ? 'LOW' : 'OK';
+                                    const color = item.current_amount < item.threshold ? '#d32f2f' : '#388e3c';
+                                    response += `- ${item.name}: ${item.current_amount} ${item.unit} <span style="color: ${color}">(${status})</span><br>`;
+                                });
+                                
+                                if (lowStockItems.length > 0) {
+                                    response += `<br><span style="color: #d32f2f;">${lowStockItems.length} items need restocking</span>`;
+                                }
+                            } catch (error) {
+                                response = 'Error fetching inventory data';
+                            }
+                        } else if (message.toLowerCase().includes('help')) {
+                            response = '<strong>Available Commands:</strong><br><br>' +
+                                       '<b>Orders:</b> show orders, pending orders, preparing orders, ready orders<br>' +
+                                       '<b>Inventory:</b> check stock, low stock alert, request restock<br>' +
+                                       '<b>Preparation:</b> start preparation, mark as ready, notify waitstaff<br><br>' +
+                                       'You can also click on any feature to the left.';
+                        } else if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+                            response = 'Hello! How can I assist with kitchen operations today?';
+                        } else {
+                            response = 'I\'ve processed your request. Is there anything else you need help with?';
+                        }
+                        
+                        addMessage(response);
+                    }, 1000);
+                }
+            }
+            
+            // Function to clear chat
+            function clearChat() {
+                while (chatMessages.firstChild) {
+                    chatMessages.removeChild(chatMessages.firstChild);
+                }
+                addMessage('Chat history cleared. How can I help you?');
+            }
+            
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            clearChatButton.addEventListener('click', clearChat);
+            
+            // Add click events to feature items
+            featureItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const command = this.getAttribute('data-command');
+                    chatInput.value = command;
+                    sendMessage();
+                });
+            });
+            
+            // Refresh data
+            refreshDataButton.addEventListener('click', function() {
+                addMessage('Data refreshed from database');
+                renderOrders();
+                renderInventory();
+            });
+            
+            // Initial render
+            renderOrders();
+            renderInventory();
+        });
+    </script>
+</body>
+</html>
